@@ -5,6 +5,7 @@ using System.Security.Claims;
 using System.Threading.Tasks;
 using CoreUserManagementDemo.Models;
 using CoreUserManagementDemo.Models.Account;
+using Microsoft.ApplicationInsights;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -23,6 +24,7 @@ namespace CoreUserManagementDemo.Controllers
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly SignInManager<ApplicationUser> _signInManager;
         private readonly ILogger _logger;
+        private readonly TelemetryClient __TelemetryClient; 
 
         public AccountController(
             UserManager<ApplicationUser> userManager,
@@ -32,6 +34,7 @@ namespace CoreUserManagementDemo.Controllers
             _userManager = userManager;
             _signInManager = signInManager;
             _logger = logger;
+            __TelemetryClient = new TelemetryClient();
         }
 
         [TempData]
@@ -92,6 +95,7 @@ namespace CoreUserManagementDemo.Controllers
             ViewData["ReturnUrl"] = returnUrl;
             if (ModelState.IsValid)
             {
+                __TelemetryClient.TrackEvent("Regsitration started for Email Address:" + model.Email);
                 var user = new ApplicationUser { UserName = model.Email, Email = model.Email };
                 var result = await _userManager.CreateAsync(user, model.Password);
                 if (result.Succeeded)
